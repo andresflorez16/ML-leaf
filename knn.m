@@ -23,35 +23,22 @@ cnt = 1;
 for i = repeatsCategories
     percent(cnt) = round(i * 0.7);
     positions = randperm(i, percent(cnt));
-    trainingPositions{cnt} = positions;
+    trainingPositions{cnt, 1} = positions;
     cnt = cnt + 1;
 end
 
 training = {};
-for i = 1:length(categories)
-    for j = 1:length(trainingPositions{i})
-        training{i, j} = data(trainingPositions{i}(j), 3:end);
-    end
-end
-
-numberObjs = [];
+dataFiltered = {};
+categoriesT = categories.';
 cnt2 = 1;
-for i = 1:length(categories)
-    for j = 1:length(training(i,:))
-        isEmptyObj = isempty(training{i, j});
-        if ~isEmptyObj
-            numberObjs(1, i) = cnt2;
-            cnt2 = cnt2 + 1;
-        end
+cnt3 = 1;
+for i = categoriesT
+    dataFiltered{cnt2, 1} = data(data(: ,1) == i, 3:end);
+    for j = trainingPositions{cnt2, 1}
+        training{cnt2, 1}(cnt3, :) = [dataFiltered{cnt2, 1}(j, feature1), dataFiltered{cnt2, 1}(j, feature2), dataFiltered{cnt2, 1}(j, feature3)];
+        cnt3 = cnt3 + 1;
     end
-    cnt2 = 1;
-end
-
-trainingFiltered = {};
-for i = 1:length(categories)
-    for j = 1:numberObjs(i)
-        trainingFiltered{i, 1}(j, :) = [training{i, j}(features(1)), training{i, j}(features(2)), training{i, j}(features(3))];
-    end
+    cnt2 = cnt2 + 1;
 end
 
 rest = [];
@@ -60,40 +47,22 @@ testPositions = {};
 for i = 1:length(repeatsCategories)
     rest = ~ismember(1:repeatsCategories(i), trainingPositions{i});
     restPositions = find(rest);
-    testPositions{i} = restPositions;
+    testPositions{i, 1} = restPositions;
 end
-
 test = {};
+cnt4 = 1;
 for i = 1:length(categories)
-    for j = 1:length(testPositions{i})
-        test{i, j} = data(testPositions{i}(j), 3:end);
-    end
-end
-
-numberObjs = [];
-cnt2 = 1;
-for i = 1:length(categories)
-    for j = 1:length(test(i,:))
-        isEmptyObj = isempty(test{i, j});
-        if ~isEmptyObj
-            numberObjs(1, i) = cnt2;
-            cnt2 = cnt2 + 1;
-        end
-    end
-    cnt2 = 1;
-end
-
-testFiltered = {};
-for i = 1:length(categories)
-    for j = 1:numberObjs(i)
-        testFiltered{i, 1}(j, :) = [test{i, j}(features(1)), test{i, j}(features(2)), test{i, j}(features(3))];
+    for j = testPositions{i, 1}
+        test{i, 1}(cnt4, :) = [dataFiltered{i, 1}(j, feature1), dataFiltered{i, 1}(j, feature2), dataFiltered{i, 1}(j, feature3)];
+        cnt4 = cnt4 + 1;
     end
 end
 
 figure(1)
 hold
 for i = 1:length(categories)
-    plot3(trainingFiltered{i, 1}(:, 3), trainingFiltered{i, 1}(:, 1), trainingFiltered{i, 1}(:, 2), 'o')
+    plot3(training{i, 1}(:, 1), training{i, 1}(:, 2), training{i, 1}(:, 3), '.r')
 end
+plot3(test{1, 1}(1, 1), test{1, 1}(1, 2), test{1, 1}(1, 3), 'ob')
 grid on
 % [trainingFiltered, testFiltered] = extractTrainingNTest(data, features);
